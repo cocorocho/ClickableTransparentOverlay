@@ -30,7 +30,7 @@
         private readonly Format format;
 
         private WNDCLASSEX wndClass;
-        private Win32Window window;
+        public Win32Window window;
         private ID3D11Device device;
         private ID3D11DeviceContext deviceContext;
         private IDXGISwapChain swapChain;
