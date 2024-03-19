@@ -3,6 +3,7 @@
     using ClickableTransparentOverlay;
     using System.Threading.Tasks;
     using ImGuiNET;
+    using ClickableTransparentOverlay.Win32;
 
     internal class SampleOverlay : Overlay
     {

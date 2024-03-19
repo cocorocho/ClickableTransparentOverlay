@@ -36,6 +36,9 @@
         private IDXGISwapChain swapChain;
         private ID3D11Texture2D backBuffer;
         private ID3D11RenderTargetView renderView;
+        private WindowStyles windowStyles;
+        private WindowExStyles windowExStyles;
+        private bool wantTransparent;
 
         private ImGuiRenderer renderer;
         private ImGuiInputHandler inputhandler;
@@ -65,7 +68,7 @@
         /// <param name="windowTitle">
         /// Title of the window created by the overlay
         /// </param>
-        public Overlay(string windowTitle) : this(windowTitle, false)
+        public Overlay(string windowTitle) : this(windowTitle, false, true, null, null)
         {
         }
 
@@ -75,8 +78,14 @@
         /// <param name="DPIAware">
         /// should the overlay scale with windows scale value or not.
         /// </param>
-        public Overlay(bool DPIAware) : this("Overlay", DPIAware)
+        public Overlay(bool DPIAware) : this("Overlay", DPIAware, true, null, null)
         {
+        }
+
+        public Overlay(WindowStyles? windowStyles, WindowExStyles windowExStyles, bool wantTransparent)
+            : this("Overlay", false, wantTransparent, windowStyles, windowExStyles)
+        {
+
         }
 
         /// <summary>
@@ -88,7 +97,7 @@
         /// <param name="DPIAware">
         /// should the overlay scale with windows scale value or not.
         /// </param>
-        public Overlay(string windowTitle, bool DPIAware)
+        public Overlay(string windowTitle, bool DPIAware, bool wantTransparent, WindowStyles? windowStyles, WindowExStyles? windowExStyles)
         {
             this.VSync = true;
             this._disposedValue = false;
@@ -102,6 +111,10 @@
             {
                 User32.SetProcessDPIAware();
             }
+
+            this.windowStyles = (WindowStyles)(windowStyles.HasValue  ? windowStyles : WindowStyles.WS_POPUP);
+            this.windowExStyles = (WindowExStyles)(windowExStyles.HasValue ? windowExStyles : WindowExStyles.WS_EX_ACCEPTFILES | WindowExStyles.WS_EX_TOPMOST);
+            this.wantTransparent = wantTransparent;
         }
 
         #endregion
@@ -541,14 +554,15 @@
                 0,
                 0,
                 this.title,
-                WindowStyles.WS_POPUP,
-                WindowExStyles.WS_EX_ACCEPTFILES | WindowExStyles.WS_EX_TOPMOST);
+                this.windowStyles,
+                this.windowExStyles);
             this.renderer = new ImGuiRenderer(device, deviceContext, 800, 600);
             this.inputhandler = new ImGuiInputHandler(this.window.Handle);
             this.overlayIsReady = true;
             await this.PostInitialized();
             User32.ShowWindow(this.window.Handle, ShowWindowCommand.Show);
-            Utils.InitTransparency(this.window.Handle);
+
+            if (this.wantTransparent) Utils.InitTransparency(this.window.Handle);
         }
 
         private bool ProcessMessage(WindowMessage msg, UIntPtr wParam, IntPtr lParam)
